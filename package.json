@@ -1,0 +1,23 @@
+{
+  "name": "javascript-parser",
+  "version": "1.0.0",
+  "description": "a js parser written in python",
+  "main": "acorn.js",
+  "scripts": {
+    "parse": "node acorn.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joshmoody24/javascript-parser.git"
+  },
+  "keywords": [
+    "javascript",
+    "parser"
+  ],
+  "author": "Josh Moody",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/joshmoody24/javascript-parser/issues"
+  },
+  "homepage": "https://github.com/joshmoody24/javascript-parser#readme"
+}
