@@ -19,5 +19,8 @@
   "bugs": {
     "url": "https://github.com/joshmoody24/javascript-parser/issues"
   },
-  "homepage": "https://github.com/joshmoody24/javascript-parser#readme"
+  "homepage": "https://github.com/joshmoody24/javascript-parser#readme",
+  "dependencies": {
+    "acorn": "^8.11.3"
+  }
 }
