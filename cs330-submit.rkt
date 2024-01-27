@@ -1,13 +1,13 @@
 #lang racket/base
 (require racket/match
-         racket/string
          racket/port
          racket/system
+         racket/string
          json
          net/url
          file/sha1)
 
-(define version "2024.winter.0") 
+(define version "2024.winter.1") 
 
 (define (url path/query)
   (string->url (string-append "https://byu.kimball.germane.net" path/query)))
@@ -65,6 +65,7 @@
              (loop (get-pure-port (url k-url)))]
             [(challenge payload k-url)
              (begin
+               (displayln "\nTest case:")
                (displayln "PROGRAM INPUT from grader")
                (displayln payload))
              (let ([os (open-output-string)])
