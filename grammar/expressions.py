@@ -9,7 +9,7 @@ class BooleanExpression:
 
 @dataclass    
 class NumberExpression:
-    value: float | int
+    value: int
 
 @dataclass    
 class ArithmeticExpression:

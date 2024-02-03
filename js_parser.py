@@ -1,12 +1,13 @@
 
 from grammar.expressions import *
-from typing import Type
+from typing import Type, TypeVar, Dict
 from typing_extensions import assert_never
 
 class ParsingException(Exception):
     pass
 
-def reverse_enum_dict(enum: Type[Enum]) -> dict:
+T = TypeVar('T', bound=Enum)
+def reverse_enum_dict(enum: Type[T]) -> Dict[str, T]:
     return { member.value: member for member in enum }
 
 def parse(raw_expression: dict) -> Expression:
