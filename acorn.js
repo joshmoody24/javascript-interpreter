@@ -15,6 +15,10 @@ getStdin().then(input => {
 
 function getStdin() {
     return new Promise((resolve, reject) => {
+        if (process.stdin.isTTY) {
+            console.error('This program requires input to be piped to it.');
+            process.exit(1);
+        }
         let data = '';
         process.stdin.on('data', chunk => {
             data += chunk;
