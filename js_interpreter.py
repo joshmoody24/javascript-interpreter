@@ -79,9 +79,9 @@ def interpret(expression: Expression):
                 return left_result
             if isinstance(right_result, ErrorResult):
                 return right_result
-            if not isinstance(left_result.value, int):
+            if type(left_result.value) is not int:
                 return ErrorResult(f"left value of relational expression ({left_result.value}) must be integer - banana")
-            if not isinstance(right_result.value, int):
+            if type(right_result.value) is not int:
                 return ErrorResult(f"right value of relational expression ({right_result.value}) must be integer - banana")
             
             match operator:
