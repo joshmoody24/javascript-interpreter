@@ -25,11 +25,16 @@ def interpret(program: Program):
     variables = {}
     for declaration in program.variable_declarations:
         variables = interpret_variable_declaration(declaration, variables)
+        if isinstance(variables, ErrorResult):
+            return variables
     return interpret_expression(program.statement, variables)
 
 def interpret_variable_declaration(declaration: VariableDeclaration, variables: dict[str, int] = {}):
     for declarator in declaration.declarators:
-        variables[declarator.identifier.name] = interpret_expression(declarator.expression, variables).value
+        result = interpret_expression(declarator.expression, variables)
+        if isinstance(result, ErrorResult):
+            return result
+        variables[declarator.identifier.name] = result.value
     return variables
 
 def interpret_expression(expression: Expression, variables: dict[str, int] = {}):

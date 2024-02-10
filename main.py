@@ -3,7 +3,7 @@ import json
 import js_parser
 import js_interpreter
 
-parse_only = sys.argv[1] == "parse"
+parse_only = sys.argv[1] == "parse" if len(sys.argv) > 1 else False
 
 raw_in = sys.stdin.read()
 if not raw_in:
