@@ -1,4 +1,6 @@
 from grammar.expressions import *
+from grammar.variables import *
+from grammar.program import Program
 from dataclasses import dataclass
 from typing_extensions import assert_never
 
@@ -19,7 +21,18 @@ def to_string(result: Result) -> str:
         case ValueResult(value):
             return f'(value ({"boolean" if type(value) is bool else "number"} {str(value).lower()}))'
 
-def interpret(expression: Expression):
+def interpret(program: Program):
+    variables = {}
+    for declaration in program.variable_declarations:
+        variables = interpret_variable_declaration(declaration, variables)
+    return interpret_expression(program.statement, variables)
+
+def interpret_variable_declaration(declaration: VariableDeclaration, variables: dict[str, int] = {}):
+    for declarator in declaration.declarators:
+        variables[declarator.identifier.name] = interpret_expression(declarator.expression, variables).value
+    return variables
+
+def interpret_expression(expression: Expression, variables: dict[str, int] = {}):
     match expression:
         case BooleanExpression(value):
             return ValueResult(value=value)
@@ -28,8 +41,8 @@ def interpret(expression: Expression):
             return ValueResult(value)
 
         case ArithmeticExpression(operator, left, right):
-            left_result = interpret(left)
-            right_result = interpret(right)
+            left_result = interpret_expression(left, variables)
+            right_result = interpret_expression(right, variables)
             if isinstance(left_result, ErrorResult):
                 return left_result
             if isinstance(right_result, ErrorResult):
@@ -53,8 +66,8 @@ def interpret(expression: Expression):
                     assert_never(operator)
 
         case LogicalExpression(operator, left, right):
-            left_result = interpret(left)
-            right_result = interpret(right)
+            left_result = interpret_expression(left, variables)
+            right_result = interpret_expression(right, variables)
             if isinstance(left_result, ErrorResult):
                 return left_result
             if isinstance(right_result, ErrorResult):
@@ -73,8 +86,8 @@ def interpret(expression: Expression):
                     assert_never(operator)
 
         case RelationalExpression(operator, left, right):
-            left_result = interpret(left)
-            right_result = interpret(right)
+            left_result = interpret_expression(left, variables)
+            right_result = interpret_expression(right, variables)
             if isinstance(left_result, ErrorResult):
                 return left_result
             if isinstance(right_result, ErrorResult):
@@ -93,7 +106,7 @@ def interpret(expression: Expression):
                     assert_never(operator)
 
         case UnaryExpression(argument):
-            argument_result = interpret(argument)
+            argument_result = interpret_expression(argument, variables)
             if isinstance(argument_result, ErrorResult):
                 return argument_result
             if not isinstance(argument_result.value, bool):
@@ -101,12 +114,17 @@ def interpret(expression: Expression):
             return ValueResult(not argument_result.value)
 
         case ConditionalExpression(test, consequent, alternate):
-            test_result = interpret(test)
+            test_result = interpret_expression(test, variables)
             if isinstance(test_result, ErrorResult):
                 return test_result
             if not isinstance(test_result.value, bool):
                 return ErrorResult(f"test value of conditional expression ({test_result.value}) must be boolean - banana")
-            return interpret(consequent) if test_result.value else interpret(alternate)
+            return interpret_expression(consequent, variables) if test_result.value else interpret_expression(alternate, variables)
+
+        case Identifier(name):
+            if name not in variables:
+                return ErrorResult(f"unbound identifier `{name}` - banana")
+            return ValueResult(variables[name])
 
         case _ as unreachable:
             assert_never(unreachable)

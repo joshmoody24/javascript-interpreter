@@ -1,6 +1,7 @@
 
 from grammar.expressions import *
 from grammar.variables import *
+from grammar.program import Program
 from typing import Type, TypeVar, Dict
 from typing_extensions import assert_never
 
@@ -15,7 +16,11 @@ def parse(raw_expression: dict) -> Expression:
     match raw_expression:
 
         case { "type": "Program", "body": child_expressions }:
-            return [parse(e) for e in child_expressions]
+            children = [parse(e) for e in child_expressions]
+            return Program(
+                variable_declarations=[child for child in children if isinstance(child, VariableDeclaration)],
+                statement=next(child for child in children if not isinstance(child, VariableDeclaration))
+            )
 
         case { "type": "ExpressionStatement", "expression": child_expression }:
             return parse(child_expression)
@@ -76,8 +81,8 @@ def parse(raw_expression: dict) -> Expression:
             
 def to_string(expression: Expression) -> str:
     match expression:
-        case list(expressions):
-            return '\n'.join(to_string(expression) for expression in expressions)
+        case Program(variable_declarations, statement):
+            return '\n'.join(to_string(expression) for expression in [*variable_declarations, statement])
         case BooleanExpression(value):
             return f"(boolean {str(value).lower()})"
         case NumberExpression(value):
