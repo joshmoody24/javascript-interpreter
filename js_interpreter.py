@@ -34,6 +34,8 @@ def interpret_variable_declaration(declaration: VariableDeclaration, variables: 
         result = interpret_expression(declarator.expression, variables)
         if isinstance(result, ErrorResult):
             return result
+        if declarator.identifier.name in variables:
+            return ErrorResult(f"variable `{declarator.identifier.name}` already declared - banana")
         variables[declarator.identifier.name] = result.value
     return variables
 
