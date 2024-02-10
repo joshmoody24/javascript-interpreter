@@ -74,24 +74,22 @@ def interpret_expression(expression: Expression, variables: dict[str, int] = {})
 
         case LogicalExpression(operator, left, right):
             left_result = interpret_expression(left, variables)
-            right_result = interpret_expression(right, variables)
             if isinstance(left_result, ErrorResult):
                 return left_result
-            if isinstance(right_result, ErrorResult):
-                return right_result
             if not isinstance(left_result.value, bool):
                 return ErrorResult(f"left value of logical expression ({left_result.value}) must be boolean - banana")
+            if operator == LogicalOperator.AND and not left_result.value:
+                return ValueResult(False) # short-circuit
+            if operator == LogicalOperator.OR and left_result.value:
+                return ValueResult(True)
+
+            right_result = interpret_expression(right, variables)
+            if isinstance(right_result, ErrorResult):
+                return right_result
             if not isinstance(right_result.value, bool):
                 return ErrorResult(f"right value of logical expression ({right_result.value}) must be boolean - banana")
-            
-            match operator:
-                case LogicalOperator.AND:
-                    return ValueResult(right_result).value if left_result.value else ValueResult(False)
-                case LogicalOperator.OR:
-                    return ValueResult(True) if left_result.value else ValueResult(right_result.value)
-                case _:
-                    assert_never(operator)
-
+            return ValueResult(right_result.value)
+        
         case RelationalExpression(operator, left, right):
             left_result = interpret_expression(left, variables)
             right_result = interpret_expression(right, variables)
