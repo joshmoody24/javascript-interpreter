@@ -1,5 +1,6 @@
 from grammar import *
 from dataclasses import dataclass
+from typing import Callable
 
 @dataclass
 class ErrorResult:
@@ -7,7 +8,7 @@ class ErrorResult:
 
 @dataclass
 class ValueResult:
-    value: bool | int
+    value: bool | int | Callable
 
 Result = ErrorResult | ValueResult
 
@@ -16,7 +17,12 @@ def to_string(result: Result) -> str:
         case ErrorResult(message):
             return f'(error "{message}")'
         case ValueResult(value):
-            return f'(value ({"boolean" if type(value) is bool else "number"} {str(value).lower()}))'
+            if type(value) is bool:
+                return f'(value (boolean {str(value).lower()}))'
+            elif type(value) is int:
+                return f'(value (number {value}))'
+            else:
+                return f'(value (function))'
 
 def interpret(syntactic_element: SyntacticElement, variables: dict[str, int] = {}):
     match syntactic_element:
