@@ -50,6 +50,10 @@ def interpret(syntactic_element: SyntacticElement, variables: dict[str, int] = {
                 return left_result
             if isinstance(right_result, ErrorResult):
                 return right_result
+            if isinstance(left_result.value, bool):
+                return ErrorResult(f"left value of arithmetic expression ({left_result.value}) must be number - banana")
+            if isinstance(right_result.value, bool):
+                return ErrorResult(f"right value of arithmetic expression ({right_result.value}) must be number - banana")
             match operator:
                 case ArithmeticOperator.ADD:
                     return ValueResult(left_result.value + right_result.value)
@@ -89,7 +93,11 @@ def interpret(syntactic_element: SyntacticElement, variables: dict[str, int] = {
                 return left_result
             if isinstance(right_result, ErrorResult):
                 return right_result
-            
+            # isinstance(False, int) == True, so we need to check for bool first (bool is a subclass of int
+            if not isinstance(left_result.value, int) or isinstance(left_result.value, bool):
+                return ErrorResult(f"left value of relational expression ({left_result.value}) must be number - banana")
+            if not isinstance(right_result.value, int) or isinstance(right_result.value, bool):
+                return ErrorResult(f"right value of relational expression ({right_result.value}) must be number - banana")
             match operator:
                 case RelationalOperator.EQUALS:
                     return ValueResult(left_result.value == right_result.value)
