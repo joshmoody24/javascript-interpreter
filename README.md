@@ -17,8 +17,5 @@ Python + mypy package - run `pip install -r requirements.txt` (tested with Pytho
 
 (the "interpret" argument is optional)
 
-## Static Type Checking
 
-This wasn't required, but I did it anyway to learn more about static type checking in Python.
-
-`mypy .`
+Note: This project used to use mypy for static type checking, but I have surpassed the limits of what mypy is capable of and thus removed it.

@@ -1,18 +1,16 @@
 
-from grammar.expressions import *
-from grammar.variables import *
-from grammar.program import Program
-from typing import Type, TypeVar, Dict
-from typing_extensions import assert_never
+from grammar import *
+from typing import Type, TypeVar
+from typing import List
 
 class ParsingException(Exception):
     pass
 
 T = TypeVar('T', bound=Enum)
-def reverse_enum_dict(enum: Type[T]) -> Dict[str, T]:
+def reverse_enum_dict(enum: Type[T]) -> dict[str, T]:
     return { member.value: member for member in enum }
         
-def parse(raw_expression: dict) -> Expression:
+def parse(raw_expression: dict) -> SyntacticElement:
     match raw_expression:
 
         case { "type": "Program", "body": child_expressions }:
@@ -30,7 +28,7 @@ def parse(raw_expression: dict) -> Expression:
                 return ArithmeticExpression(
                     operator=reverse_enum_dict(ArithmeticOperator)[operator],
                     left=parse(left),
-                    right=parse(right)
+                    right=parse(right),
                 )
             elif operator in ["==", "<"]:
                 return RelationalExpression(
@@ -75,12 +73,34 @@ def parse(raw_expression: dict) -> Expression:
         
         case { "type": "Identifier", "name": name }:
             return Identifier(name=name)
+        
+        case { "type": "FunctionExpression", "params": [parameter], "body": body }:
+            return FunctionExpression(
+                parameter=parse(parameter),
+                body=parse(body)
+            )
+        
+        case { "type": "CallExpression", "callee": callee, "arguments": arguments}:
+            argument = arguments[0] # as per project spec, we only support one argument
+            return CallExpression(
+                callee=parse(callee),
+                call_expression=parse(argument),
+            )
+        
+        case { "type": "BlockStatement", "body": body }:
+            return BlockStatement(
+                body=[parse(e) for e in body[:-1]],
+                return_statement=parse(body[-1])
+            )
+        
+        case { "type": "ReturnStatement", "argument": argument }:
+            return parse(argument)
             
         case _ as unreachable:
-            raise ParsingException(f"Unrecognized expression: {unreachable}")
+            raise ParsingException(f"Unrecognized expression while parsing: {unreachable}")
             
-def to_string(expression: Expression) -> str:
-    match expression:
+def to_string(element: SyntacticElement) -> str:
+    match element:
         case Program(variable_declarations, statement):
             return '\n'.join(to_string(expression) for expression in [*variable_declarations, statement])
         case BooleanExpression(value):
@@ -100,8 +120,17 @@ def to_string(expression: Expression) -> str:
         case VariableDeclaration(declarators):
             return f"(variable_declaration {', '.join([to_string(declarator) for declarator in declarators])})"
         case VariableDeclarator(identifier, expression):
-            return f"(variable_declarator {to_string(identifier)} {to_string(expression)})"
+            return f"(variable_declarator {to_string(identifier)} {to_string(element)})"
+        case VariableDeclarator(identifier, expression):
+            return f"(variable_declarator {to_string(identifier)} {to_string(element)})"
         case Identifier(name):
             return f"(identifier {name})"
+        case BlockStatement(body, statement):
+            return f"(block_statement {', '.join([to_string(expression) for expression in body])} {to_string(statement)})"
+        case FunctionExpression(name, parameter, body):
+            return f"(function)"
+        case CallExpression(callee):
+            return f"(call {to_string(callee)})"
+        
         case _ as unreachable:
-            assert_never(unreachable)
+            raise Exception(f"Unrecognized expression: {unreachable}")
