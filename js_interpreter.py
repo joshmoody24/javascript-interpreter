@@ -50,7 +50,7 @@ def interpret(syntactic_element: SyntacticElement, variables: dict[str, int] = {
                 if isinstance(result, ErrorResult):
                     return result
                 if declarator.identifier.name in variables:
-                    return ErrorResult(f"variable `{declarator.identifier.name}` already declared - banana")
+                    return ErrorResult(f"variable `{declarator.identifier.name}` already declared - banana"), variables, heap
                 address = free_heap_address(heap)
                 variables = {**variables, declarator.identifier.name: address}
                 heap = {**heap, address: result.value}
@@ -69,9 +69,9 @@ def interpret(syntactic_element: SyntacticElement, variables: dict[str, int] = {
                 return left_result, variables, heap
             if isinstance(right_result, ErrorResult):
                 return right_result, variables, heap
-            if isinstance(left_result.value, bool):
+            if isinstance(left_result.value, bool) or isinstance(left_result.value, Void):
                 return ErrorResult(f"left value of arithmetic expression ({left_result.value}) must be number - banana"), variables, heap
-            if isinstance(right_result.value, bool):
+            if isinstance(right_result.value, bool) or isinstance(right_result.value, Void):
                 return ErrorResult(f"right value of arithmetic expression ({right_result.value}) must be number - banana"), variables, heap
             match operator:
                 case ArithmeticOperator.ADD:
@@ -82,7 +82,7 @@ def interpret(syntactic_element: SyntacticElement, variables: dict[str, int] = {
                     return ValueResult(left_result.value * right_result.value), variables, heap
                 case ArithmeticOperator.DIVIDE:
                     if right_result.value == 0:
-                        return ErrorResult("division by zero banana")
+                        return ErrorResult("division by zero banana"), variables, heap
                     return ValueResult(left_result.value // right_result.value), variables, heap
                 case _:
                     raise Exception(f"unrecognized arithmetic operator: {operator}")
@@ -92,7 +92,7 @@ def interpret(syntactic_element: SyntacticElement, variables: dict[str, int] = {
             if isinstance(left_result, ErrorResult):
                 return left_result, variables, heap
             if not isinstance(left_result.value, bool):
-                return ErrorResult(f"left value of logical expression ({left_result.value}) must be boolean - banana")
+                return ErrorResult(f"left value of logical expression ({left_result.value}) must be boolean - banana"), variables, heap
             if operator == LogicalOperator.AND and not left_result.value:
                 return ValueResult(False), variables, heap # short-circuit
             if operator == LogicalOperator.OR and left_result.value:
@@ -102,7 +102,7 @@ def interpret(syntactic_element: SyntacticElement, variables: dict[str, int] = {
             if isinstance(right_result, ErrorResult):
                 return right_result, variables, heap
             if not isinstance(right_result.value, bool):
-                return ErrorResult(f"right value of logical expression ({right_result.value}) must be boolean - banana")
+                return ErrorResult(f"right value of logical expression ({right_result.value}) must be boolean - banana"), variables, heap
             return ValueResult(right_result.value), variables, heap
         
         case RelationalExpression(operator, left, right):
@@ -114,9 +114,9 @@ def interpret(syntactic_element: SyntacticElement, variables: dict[str, int] = {
                 return right_result, variables, heap
             # isinstance(False, int) == True, so we need to check for bool first (bool is a subclass of int
             if not isinstance(left_result.value, int) or isinstance(left_result.value, bool):
-                return ErrorResult(f"left value of relational expression ({left_result.value}) must be number - banana")
+                return ErrorResult(f"left value of relational expression ({left_result.value}) must be number - banana"), variables, heap
             if not isinstance(right_result.value, int) or isinstance(right_result.value, bool):
-                return ErrorResult(f"right value of relational expression ({right_result.value}) must be number - banana")
+                return ErrorResult(f"right value of relational expression ({right_result.value}) must be number - banana"), variables, heap
             match operator:
                 case RelationalOperator.EQUALS:
                     return ValueResult(left_result.value == right_result.value), variables, heap
@@ -130,7 +130,7 @@ def interpret(syntactic_element: SyntacticElement, variables: dict[str, int] = {
             if isinstance(argument_result, ErrorResult):
                 return argument_result, variables, heap
             if not isinstance(argument_result.value, bool):
-                return ErrorResult(f"argument value of unary expression ({argument_result.value}) must be boolean - banana")
+                return ErrorResult(f"argument value of unary expression ({argument_result.value}) must be boolean - banana"), variables, heap
             return ValueResult(not argument_result.value), variables, heap
 
         case ConditionalExpression(test, consequent, alternate):
