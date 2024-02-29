@@ -14,5 +14,5 @@ parsed = js_parser.parse(es_tree)
 if parse_only:
     print(js_parser.to_string(parsed))
     sys.exit(0)
-result = js_interpreter.interpret(parsed)
+result, variables, heap = js_interpreter.interpret(parsed)
 print(js_interpreter.to_string(result))

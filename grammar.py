@@ -53,13 +53,18 @@ class CallExpression:
     call_expression: Expression
 
 @dataclass
+class AssignmentExpression:
+    left: Identifier
+    right: Expression
+
+@dataclass
 class Program:
-    variable_declarations: list[VariableDeclaration]
+    top_level_terms: list[TopLevelTerm]
     statement: Expression
 
 @dataclass
 class BlockStatement:
-    body: list[VariableDeclaration]
+    body: list[TopLevelTerm]
     return_statement: Expression
 
 @dataclass
@@ -98,6 +103,11 @@ Expression = (
     | ArithmeticExpression
     | FunctionExpression
     | CallExpression
+)
+
+TopLevelTerm = (
+    VariableDeclaration
+    | AssignmentExpression
 )
 
 SyntacticElement = (

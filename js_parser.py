@@ -15,9 +15,11 @@ def parse(raw_expression: dict) -> SyntacticElement:
 
         case { "type": "Program", "body": child_expressions }:
             children = [parse(e) for e in child_expressions]
+            top_level_terms = children[:-1]
+            statement = children[-1]
             return Program(
-                variable_declarations=[child for child in children if isinstance(child, VariableDeclaration)],
-                statement=next(child for child in children if not isinstance(child, VariableDeclaration))
+                top_level_terms=top_level_terms,
+                statement=statement,
             )
 
         case { "type": "ExpressionStatement", "expression": child_expression }:
@@ -95,6 +97,12 @@ def parse(raw_expression: dict) -> SyntacticElement:
         
         case { "type": "ReturnStatement", "argument": argument }:
             return parse(argument)
+        
+        case { "type": "AssignmentExpression", "left": left, "right": right }:
+            return AssignmentExpression(
+                left=parse(left),
+                right=parse(right)
+            )
             
         case _ as unreachable:
             raise ParsingException(f"Unrecognized expression while parsing: {unreachable}")
@@ -120,17 +128,17 @@ def to_string(element: SyntacticElement) -> str:
         case VariableDeclaration(declarators):
             return f"(variable_declaration {', '.join([to_string(declarator) for declarator in declarators])})"
         case VariableDeclarator(identifier, expression):
-            return f"(variable_declarator {to_string(identifier)} {to_string(element)})"
-        case VariableDeclarator(identifier, expression):
-            return f"(variable_declarator {to_string(identifier)} {to_string(element)})"
+            return f"(variable_declarator {to_string(identifier)} {to_string(expression)})"
         case Identifier(name):
             return f"(identifier {name})"
         case BlockStatement(body, statement):
             return f"(block_statement {', '.join([to_string(expression) for expression in body])} {to_string(statement)})"
-        case FunctionExpression(name, parameter, body):
+        case FunctionExpression(parameter, body):
             return f"(function)"
         case CallExpression(callee):
             return f"(call {to_string(callee)})"
+        case AssignmentExpression(left, right):
+            return f"(assignment {to_string(left)} {to_string(right)})"
         
         case _ as unreachable:
             raise Exception(f"Unrecognized expression: {unreachable}")

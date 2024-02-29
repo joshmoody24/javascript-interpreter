@@ -5,7 +5,7 @@ A simple JavaScript parser + interpreter made for CS 330 - Concepts of Programmi
 ## Requirements
 
 Node.js + acorn package - run `npm install` (tested with Node v18)
-Python + mypy package - run `pip install -r requirements.txt` (tested with Python 3.11)
+Python (tested with Python 3.11)
 
 ## How to Parse
 
@@ -18,4 +18,4 @@ Python + mypy package - run `pip install -r requirements.txt` (tested with Pytho
 (the "interpret" argument is optional)
 
 
-Note: This project used to use mypy for static type checking, but I have surpassed the limits of what mypy is capable of and thus removed it.
+Note: This project previously used mypy for static type checking, but I have surpassed the limits of what mypy is capable of and thus removed it.
